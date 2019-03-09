@@ -1,0 +1,3 @@
+%{
+  "redix": {:hex, :redix, "0.9.3", "c51d66657018a9b14f3b4496b1ba70ef6a16e8414cd19b34635242ac371beb95", [:mix], [], "hexpm"},
+}
