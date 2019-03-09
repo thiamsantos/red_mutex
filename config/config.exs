@@ -29,4 +29,7 @@ use Mix.Config
 #
 #     import_config "#{Mix.env()}.exs"
 
-config :red_mutex, RedMutexTest.MyMutex, url: "redis://localhost:6379"
+config :red_mutex, RedMutexTest.MyMutex,
+  url: "redis://localhost:6379",
+  key: "key",
+  expiration_in_seconds: 1_200

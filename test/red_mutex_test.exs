@@ -1,12 +1,15 @@
-defmodule RedMutexTest.MyMutex do
-  use RedMutex, otp_app: :red_mutex
-end
-
 defmodule RedMutexTest do
   use ExUnit.Case
 
-  alias RedMutexTest.MyMutex
-  require RedMutexTest.MyMutex
+  defmodule MyMutex do
+    use RedMutex, otp_app: :red_mutex
+  end
+
+  defmodule Worker do
+    def perform(arg) do
+      {:ok, arg}
+    end
+  end
 
   setup do
     conn = start_supervised!({Redix, "redis://localhost:6379"})
@@ -41,11 +44,7 @@ defmodule RedMutexTest do
     end
   end
 
-  describe "lock/1" do
-    test "expiration time"
-    test "mutex format"
-    test "invalid config"
-
+  describe "lock/0" do
     test "locked once", %{conn: conn} do
       assert Redix.command!(conn, ["GET", "key"]) == nil
       assert {:ok, mutex} = MyMutex.lock()
@@ -78,7 +77,7 @@ defmodule RedMutexTest do
     end
   end
 
-  describe "exists_lock" do
+  describe "exists_lock/0" do
     test "return true when mutex is locked" do
       assert {:ok, _mutex} = MyMutex.lock()
 
@@ -90,6 +89,43 @@ defmodule RedMutexTest do
       assert :ok = MyMutex.unlock(mutex)
 
       assert MyMutex.exists_lock() == {:ok, false}
+    end
+  end
+
+  describe "synchronize/1" do
+    test "accepts function", %{conn: conn} do
+      assert Redix.command!(conn, ["GET", "key"]) == nil
+
+      actual =
+        MyMutex.synchronize(fn ->
+          assert Redix.command!(conn, ["GET", "key"]) != nil
+          {:ok, "something"}
+        end)
+
+      assert Redix.command!(conn, ["GET", "key"]) == nil
+
+      assert actual == {:ok, "something"}
+    end
+
+    test "accepts mod/fun/args" do
+      actual = MyMutex.synchronize({RedMutexTest.Worker, :perform, ["arg"]})
+      expected = {:ok, "arg"}
+
+      assert actual == expected
+    end
+
+    test "capture errors", %{conn: conn} do
+      assert Redix.command!(conn, ["GET", "key"]) == nil
+
+      actual =
+        MyMutex.synchronize(fn ->
+          assert Redix.command!(conn, ["GET", "key"]) != nil
+          raise RuntimeError, "err"
+        end)
+
+      assert Redix.command!(conn, ["GET", "key"]) == nil
+
+      assert {:error, %RuntimeError{message: "err"}} = actual
     end
   end
 

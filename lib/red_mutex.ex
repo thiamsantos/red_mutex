@@ -44,9 +44,11 @@ defmodule RedMutex do
 
   @type mutex() :: String.t()
   @type reason() :: any()
-  @callback lock(expiration_in_seconds :: integer()) :: {:ok, mutex()} | {:error, reason()}
+  @callback lock :: {:ok, mutex()} | {:error, reason()}
   @callback exists_lock :: {:ok, boolean()} | {:error, reason()}
   @callback unlock(mutex()) :: :ok | {:error, reason()}
+  @callback synchronize(fun() | {module :: atom(), function_name :: atom(), args :: [any()]}) ::
+              any()
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -67,17 +69,56 @@ defmodule RedMutex do
 
       @impl true
       def lock do
-        RedMutex.Command.lock(__MODULE__, "key", 1200)
+        RedMutex.Command.lock(__MODULE__, "key", expiration_in_seconds())
       end
 
       @impl true
-      def unlock(mutex) do
+      def unlock(mutex) when is_binary(mutex) do
         RedMutex.Command.unlock(__MODULE__, "key", mutex)
       end
 
       @impl true
       def exists_lock do
-        RedMutex.Command.exists_lock(__MODULE__, "key")
+        RedMutex.Command.exists_lock(__MODULE__, key())
+      end
+
+      @impl true
+      def synchronize(action) do
+        case lock() do
+          {:ok, mutex} ->
+            try do
+              run(action)
+            rescue
+              err ->
+                {:error, err}
+            after
+              unlock(mutex)
+            end
+
+          err ->
+            err
+        end
+      end
+
+      defp run(action) when is_function(action) do
+        action.()
+      end
+
+      defp run({module, function_name, args})
+           when is_atom(module) and is_atom(function_name) and is_list(args) do
+        apply(module, function_name, args)
+      end
+
+      defp key do
+        @otp_app
+        |> Application.fetch_env!(__MODULE__)
+        |> Keyword.fetch!(:key)
+      end
+
+      defp expiration_in_seconds do
+        @otp_app
+        |> Application.fetch_env!(__MODULE__)
+        |> Keyword.fetch!(:expiration_in_seconds)
       end
     end
   end
