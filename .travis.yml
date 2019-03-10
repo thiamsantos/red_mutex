@@ -15,7 +15,7 @@ script:
   - mix format --check-formatted
   - mix credo --strict
   - mix test
-  - mix coveralls.travis
+  - mix coveralls.travis --pro
 
 otp_release:
   - 20.3
