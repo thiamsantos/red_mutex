@@ -14,3 +14,6 @@ elixir:
 script:
   - mix format --check-formatted
   - mix test
+
+services:
+  - redis-server
