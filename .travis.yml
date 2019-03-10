@@ -18,7 +18,6 @@ script:
   - mix coveralls.travis
 
 otp_release:
-  - 19.3
   - 20.3
   - 21.0
 
