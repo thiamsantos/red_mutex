@@ -1,53 +1,33 @@
 defmodule RedMutex do
   @moduledoc """
-  Documentation for RedMutex.
+      defmodule MyMutex do
+        use RedMutex, otp_app: :my_app
+      end
+
+      config :my_app, MyMutex,
+        redis_url: "redis://redix.example.com:6380",
+        key: "something"
+
+      {:ok, mutex} = MyMutex.lock(12)
+
+      true = MyMutex.locked?
+
+      :ok = MyMutex.unlock(mutex)
+
+      import MyMutex, only: [synchronize: 1]
+
+      synchronize do
+        // work
+      end
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> RedMutex.hello()
-      :world
-
-  """
-  # def hello do
-  #   :crypto.hash(:sha256, :crypto.strong_rand_bytes(32))
-  #   |> Base.encode64()
-  #   |> IO.inspect()
-
-  #   :world
-  # end
-
-  # @doc """
-  # defmodule MyMutex do
-  #   use RedMutex, otp_app: :my_app
-  # end
-
-  # config :my_app, MyMutex,
-  #   redis_url: "redis://redix.example.com:6380",
-  #   key: "something"
-
-  # {:ok, mutex} = MyMutex.lock(12)
-
-  # true = MyMutex.locked?
-
-  # :ok = MyMutex.unlock(mutex)
-
-  # import MyMutex, only: [synchronize: 1]
-
-  # synchronize do
-  #   // work
-  # end
-  # """
 
   @type mutex() :: String.t()
   @type reason() :: any()
+  @type callback() :: fun() | {module :: atom(), function_name :: atom(), args :: [any()]}
   @callback lock :: {:ok, mutex()} | {:error, reason()}
   @callback exists_lock :: {:ok, boolean()} | {:error, reason()}
   @callback unlock(mutex()) :: :ok | {:error, reason()}
-  @callback synchronize(fun() | {module :: atom(), function_name :: atom(), args :: [any()]}) ::
+  @callback synchronize(callback()) ::
               any()
 
   defmacro __using__(opts) do
