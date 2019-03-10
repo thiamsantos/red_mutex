@@ -23,3 +23,10 @@ otp_release:
 
 services:
   - redis-server
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: mix hex.publish --yes
+  on:
+    tags: true

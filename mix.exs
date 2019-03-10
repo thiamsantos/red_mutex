@@ -1,13 +1,19 @@
 defmodule RedMutex.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :red_mutex,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      description: "Redlock (Redis Distributed Lock) implementation",
+      package: package(),
+      docs: docs(),
+      name: "RedMutex",
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -23,6 +29,22 @@ defmodule RedMutex.MixProject do
   def application do
     [
       extra_applications: [:logger]
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Thiago Santos"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/thiamsantos/red_mutex"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "RedMutex",
+      source_url: "https://github.com/thiamsantos/red_mutex",
+      extras: ["README.md"]
     ]
   end
 
