@@ -9,7 +9,9 @@ defmodule RedMutex.Supervisor do
   end
 
   def init({mutex, otp_app, opts}) do
-    url = Application.fetch_env!(otp_app, mutex) |> Keyword.fetch!(:url)
+    url = otp_app
+    |> Application.fetch_env!(mutex)
+    |> Keyword.fetch!(:url)
 
     children = [
       {Redix, {url, name: mutex}},

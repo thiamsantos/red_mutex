@@ -1,4 +1,5 @@
 language: elixir
+sudo: false
 
 cache:
   directories:
@@ -13,7 +14,13 @@ elixir:
 
 script:
   - mix format --check-formatted
+  - mix credo --strict
   - mix test
+
+otp_release:
+  - 19.3
+  - 20.3
+  - 21.0
 
 services:
   - redis-server
