@@ -27,8 +27,7 @@ defmodule RedMutex do
   @callback lock :: {:ok, mutex()} | {:error, reason()}
   @callback exists_lock :: {:ok, boolean()} | {:error, reason()}
   @callback unlock(mutex()) :: :ok | {:error, reason()}
-  @callback synchronize(callback()) ::
-              any()
+  @callback synchronize(callback()) :: any()
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
