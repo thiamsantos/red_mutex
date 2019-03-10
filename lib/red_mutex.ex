@@ -63,8 +63,8 @@ defmodule RedMutex do
         }
       end
 
-      def start_link(opts \\ []) do
-        RedMutex.Supervisor.start_link(__MODULE__, @otp_app, opts)
+      def start_link(_opts) do
+        RedMutex.Supervisor.start_link(__MODULE__, @otp_app)
       end
 
       @impl true
