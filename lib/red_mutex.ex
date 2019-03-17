@@ -38,7 +38,7 @@ defmodule RedMutex do
   @doc """
   Attempts to acquire an lock.
 
-      ## Examples
+  ## Examples
 
       iex> MyMutex.acquire_lock()
       {:ok, lock}
@@ -53,7 +53,7 @@ defmodule RedMutex do
   @doc """
   Checks if an lock exists. Returns `{:ok, true}` if the resource is locked.
 
-      ## Examples
+  ## Examples
 
       iex> MyMutex.exists_lock()
       {:ok, true}
@@ -68,7 +68,7 @@ defmodule RedMutex do
   @doc """
   Releases the lock.
 
-      ## Examples
+  ## Examples
 
       iex> MyMutex.release_lock(lock)
       :ok
@@ -83,7 +83,7 @@ defmodule RedMutex do
   @doc """
   Obtains an lock, run the callback, and releases the lock when the block completes.
 
-      ## Examples
+  ## Examples
 
       iex> MyMutex.synchronize(fn ->
       ...>   # work
