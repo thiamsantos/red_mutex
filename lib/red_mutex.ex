@@ -43,22 +43,27 @@ defmodule RedMutex do
       end
 
       def start_link(_opts) do
-        RedMutex.Supervisor.start_link(__MODULE__, @otp_app)
+        url = RedMutex.Configuration.url(@otp_app, __MODULE__)
+        RedMutex.Supervisor.start_link(mutex: __MODULE__, url: url)
       end
 
       @impl true
       def lock do
-        RedMutex.Command.lock(__MODULE__, "key", expiration_in_seconds())
+        key = RedMutex.Configuration.key(@otp_app, __MODULE__)
+        expiration_in_seconds = RedMutex.Configuration.expiration_in_seconds(@otp_app, __MODULE__)
+        RedMutex.Command.lock(__MODULE__, key, expiration_in_seconds)
       end
 
       @impl true
       def unlock(mutex) when is_binary(mutex) do
-        RedMutex.Command.unlock(__MODULE__, "key", mutex)
+        key = RedMutex.Configuration.key(@otp_app, __MODULE__)
+        RedMutex.Command.unlock(__MODULE__, key, mutex)
       end
 
       @impl true
       def exists_lock do
-        RedMutex.Command.exists_lock(__MODULE__, key())
+        key = RedMutex.Configuration.key(@otp_app, __MODULE__)
+        RedMutex.Command.exists_lock(__MODULE__, key)
       end
 
       @impl true
@@ -86,18 +91,6 @@ defmodule RedMutex do
       defp run({module, function_name, args})
            when is_atom(module) and is_atom(function_name) and is_list(args) do
         apply(module, function_name, args)
-      end
-
-      defp key do
-        @otp_app
-        |> Application.fetch_env!(__MODULE__)
-        |> Keyword.fetch!(:key)
-      end
-
-      defp expiration_in_seconds do
-        @otp_app
-        |> Application.fetch_env!(__MODULE__)
-        |> Keyword.fetch!(:expiration_in_seconds)
       end
     end
   end
