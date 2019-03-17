@@ -10,12 +10,12 @@ defmodule RedMutex.Configuration do
   def key(otp_app, mutex) do
     otp_app
     |> Application.fetch_env!(mutex)
-    |> Keyword.fetch!(:key)
+    |> Keyword.get(:key, "red_mutex_lock")
   end
 
   def expiration_in_seconds(otp_app, mutex) do
     otp_app
     |> Application.fetch_env!(mutex)
-    |> Keyword.fetch!(:expiration_in_seconds)
+    |> Keyword.get(:expiration_in_seconds, 3_600)
   end
 end

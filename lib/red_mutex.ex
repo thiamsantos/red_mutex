@@ -1,32 +1,99 @@
 defmodule RedMutex do
   @moduledoc """
-      defmodule MyMutex do
+  Defines a mutex.
+
+  A mutex defines an easy to use interface to interact with an
+  [distributed lock backed by redis](https://redis.io/topics/distlock).
+
+  When used, the mutex expects the :otp_app as option.
+  The :otp_app should point to an OTP application that has the mutex configuration.
+  For example, the mutex:
+
+      defmodule MyApp.MyMutex do
         use RedMutex, otp_app: :my_app
       end
 
-      config :my_app, MyMutex,
-        redis_url: "redis://redix.example.com:6380",
-        key: "something"
+  Could be configured with:
 
-      {:ok, mutex} = MyMutex.lock(12)
+      config :my_app, MyApp.MyMutex,
+        url: "redis://localhost:6379",
+        key: "red_mutex_lock",
+        expiration_in_seconds: 3_600
 
-      true = MyMutex.locked?
+  Options:
 
-      :ok = MyMutex.unlock(mutex)
+    * `:url` - the redis url. Required.
+    * `:key`- The key at redis used to store the lock information.
+      Defaults to `"red_mutex_lock"`.
+    * `:expiration_in_seconds` - Time in seconds that the resource will be kept locked.
+      After that time the lock will be automattically released.
+      Defaults to `3600`, one hour.
 
-      import MyMutex, only: [synchronize: 1]
-
-      synchronize do
-        // work
-      end
   """
 
-  @type mutex() :: String.t()
+  @type lock() :: String.t()
   @type reason() :: any()
   @type callback() :: fun() | {module :: atom(), function_name :: atom(), args :: [any()]}
-  @callback lock :: {:ok, mutex()} | {:error, reason()}
+
+  @doc """
+  Attempts to acquire an lock.
+
+      ## Examples
+
+      iex> MyMutex.acquire_lock()
+      {:ok, lock}
+      iex> MyMutex.acquire_lock()
+      {:error, :already_locked}
+      iex> MyMutex.acquire_lock()
+      {:error, reason}
+
+  """
+  @callback acquire_lock :: {:ok, lock()} | {:error, :already_locked} | {:error, reason()}
+
+  @doc """
+  Checks if an lock exists. Returns `{:ok, true}` if the resource is locked.
+
+      ## Examples
+
+      iex> MyMutex.exists_lock()
+      {:ok, true}
+      iex> MyMutex.exists_lock()
+      {:ok, false}
+      iex> MyMutex.exists_lock()
+      {:error, reason}
+
+  """
   @callback exists_lock :: {:ok, boolean()} | {:error, reason()}
-  @callback unlock(mutex()) :: :ok | {:error, reason()}
+
+  @doc """
+  Releases the lock.
+
+      ## Examples
+
+      iex> MyMutex.release_lock(lock)
+      :ok
+      iex> MyMutex.release_lock(lock)
+      {:error, :unlock_fail}
+      iex> MyMutex.release_lock(lock)
+      {:error, reason}
+
+  """
+  @callback release_lock(lock()) :: :ok | {:error, reason()}
+
+  @doc """
+  Obtains an lock, run the callback, and releases the lock when the block completes.
+
+      ## Examples
+
+      iex> MyMutex.synchronize(fn ->
+      ...>   # work
+      ...>   {:ok, "completed"}
+      ...> end)
+      {:ok, "completed"}
+      iex> MyMutex.synchronize({MyApp, :work, []})
+      {:ok, "completed"}
+
+  """
   @callback synchronize(callback()) :: any()
 
   defmacro __using__(opts) do
@@ -48,16 +115,16 @@ defmodule RedMutex do
       end
 
       @impl true
-      def lock do
+      def acquire_lock do
         key = RedMutex.Configuration.key(@otp_app, __MODULE__)
         expiration_in_seconds = RedMutex.Configuration.expiration_in_seconds(@otp_app, __MODULE__)
-        RedMutex.Command.lock(__MODULE__, key, expiration_in_seconds)
+        RedMutex.Command.acquire_lock(__MODULE__, key, expiration_in_seconds)
       end
 
       @impl true
-      def unlock(mutex) when is_binary(mutex) do
+      def release_lock(lock) when is_binary(lock) do
         key = RedMutex.Configuration.key(@otp_app, __MODULE__)
-        RedMutex.Command.unlock(__MODULE__, key, mutex)
+        RedMutex.Command.release_lock(__MODULE__, key, lock)
       end
 
       @impl true
@@ -68,15 +135,15 @@ defmodule RedMutex do
 
       @impl true
       def synchronize(action) do
-        case lock() do
-          {:ok, mutex} ->
+        case acquire_lock() do
+          {:ok, lock} ->
             try do
               run(action)
             rescue
               err ->
                 {:error, err}
             after
-              unlock(mutex)
+              release_lock(lock)
             end
 
           err ->

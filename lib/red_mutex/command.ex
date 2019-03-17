@@ -11,19 +11,19 @@ defmodule RedMutex.Command do
 
   @helper_hash :sha |> :crypto.hash(@helper_script) |> Base.encode16(case: :lower)
 
-  def lock(conn, key, expiration_in_seconds)
+  def acquire_lock(conn, key, expiration_in_seconds)
       when is_atom(conn) and is_binary(key) and is_integer(expiration_in_seconds) do
-    mutex = gen_mutex()
+    lock = gen_mutex()
 
-    case Redix.command(conn, ["SET", key, mutex, "NX", "EX", expiration_in_seconds]) do
-      {:ok, "OK"} -> {:ok, mutex}
+    case Redix.command(conn, ["SET", key, lock, "NX", "EX", expiration_in_seconds]) do
+      {:ok, "OK"} -> {:ok, lock}
       {:ok, nil} -> {:error, :already_locked}
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def unlock(conn, key, mutex) when is_atom(conn) and is_binary(key) and is_binary(mutex) do
-    case Redix.command(conn, ["EVALSHA", @helper_hash, "1", key, mutex]) do
+  def release_lock(conn, key, lock) when is_atom(conn) and is_binary(key) and is_binary(lock) do
+    case Redix.command(conn, ["EVALSHA", @helper_hash, "1", key, lock]) do
       {:ok, 1} -> :ok
       {:ok, 0} -> {:error, :unlock_fail}
       {:error, reason} -> {:error, reason}
