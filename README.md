@@ -14,7 +14,7 @@ by adding `red_mutex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:red_mutex, "~> 0.2.1"}
+    {:red_mutex, "~> 0.2.2"}
   ]
 end
 ```
