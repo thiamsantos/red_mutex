@@ -51,7 +51,7 @@ defmodule RedMutex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:redix, "~> 0.9.3"},
+      {:redix, "~> 0.10.0"},
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.6", only: :test, runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
