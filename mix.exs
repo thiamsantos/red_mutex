@@ -53,7 +53,7 @@ defmodule RedMutex.MixProject do
     [
       {:redix, "~> 0.10.0"},
       {:credo, "~> 1.3.0", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~> 0.12.0", only: :test, runtime: false},
+      {:excoveralls, "~> 0.13.2", only: :test, runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
