@@ -43,8 +43,7 @@ defmodule RedMutex.MixProject do
   defp docs do
     [
       main: "RedMutex",
-      source_url: "https://github.com/thiamsantos/red_mutex",
-      extras: ["README.md"]
+      source_url: "https://github.com/thiamsantos/red_mutex"
     ]
   end
 

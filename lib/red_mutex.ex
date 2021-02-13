@@ -1,35 +1,9 @@
 defmodule RedMutex do
-  @moduledoc """
-  Defines a mutex.
-
-  A mutex defines an easy to use interface to interact with an
-  [distributed lock backed by redis](https://redis.io/topics/distlock).
-
-  When used, the mutex expects the :otp_app as option.
-  The :otp_app should point to an OTP application that has the mutex configuration.
-  For example, the mutex:
-
-      defmodule MyApp.MyMutex do
-        use RedMutex, otp_app: :my_app
-      end
-
-  Could be configured with:
-
-      config :my_app, MyApp.MyMutex,
-        url: "redis://localhost:6379",
-        key: "red_mutex_lock",
-        expiration_in_seconds: 3_600
-
-  Options:
-
-    * `:url` - the redis url. Required.
-    * `:key`- The key at redis used to store the lock information.
-      Defaults to `"red_mutex_lock"`.
-    * `:expiration_in_seconds` - Time in seconds that the resource will be kept locked.
-      After that time the lock will be automattically released.
-      Defaults to `3600`, one hour.
-
-  """
+  @external_resource "README.md"
+  @moduledoc "README.md"
+             |> File.read!()
+             |> String.split("<!-- MDOC !-->")
+             |> Enum.fetch!(1)
 
   @type lock() :: String.t()
   @type reason() :: any()
