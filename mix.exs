@@ -7,7 +7,7 @@ defmodule RedMutex.MixProject do
     [
       app: :red_mutex,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Redlock (Redis Distributed Lock) implementation",
@@ -51,10 +51,9 @@ defmodule RedMutex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:redix, "~> 0.10.0"},
-      {:credo, "~> 1.3.0", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~> 0.12.0", only: :test, runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:redix, "~> 1.0"},
+      {:excoveralls, "~> 0.13", only: :test, runtime: false},
+      {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end
 end
