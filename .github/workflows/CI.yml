@@ -50,7 +50,7 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
-          mix deps.get --only test
+          mix deps.get
       - run: mix deps.unlock --check-unused
         if: matrix.check_unused_deps
       - run: mix compile --warnings-as-errors
