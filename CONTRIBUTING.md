@@ -17,7 +17,7 @@ And submit your pull request after making sure that all tests pass and they are 
 - Clone your fork: `git clone https://github.com/<your-username>/red_mutex`
 - Navigate to the newly cloned directory: `cd red_mutex`
 - Create a new branch for the new feature: `git checkout -b my-new-feature`
-- Install the tools necessary for development: `npm install`
+- Install the tools necessary for development: `mix deps.get`
 - Make your changes.
 - Commit your changes: `git commit -am 'Add some feature'`
 - Push to the branch: `git push origin my-new-feature`
